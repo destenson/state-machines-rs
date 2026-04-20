@@ -6,8 +6,8 @@
 use criterion::{BatchSize, BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 use state_machines_rs::{
-    Runner, SMExt, StateMachine,
-    primitives::{Adder, Delay, Increment, Multiplier},
+    Runner, SMExt, SplitMix64, StateMachine,
+    primitives::{Adder, Delay, Increment, MarkovChain, Multiplier},
     tsm::{DynTSM, Repeat, Sequence, into_dyn},
 };
 
@@ -214,6 +214,40 @@ fn bench_tsm_sequence(c: &mut Criterion) {
     group.finish();
 }
 
+/// Stochastic chain sampling throughput. Dominated by RNG cost (SplitMix64
+/// is ~1ns for `next_u64`) plus one cumulative-sum walk per step over the
+/// transition row.
+fn bench_markov_chain(c: &mut Criterion) {
+    let mut group = c.benchmark_group("markov_chain");
+
+    for &states in &[3usize, 10, 50] {
+        for &n in &[10_000usize, 100_000] {
+            group.throughput(Throughput::Elements(n as u64));
+            let id = BenchmarkId::new(format!("{}_state", states), n);
+            group.bench_with_input(id, &(states, n), |b, &(states, n)| {
+                b.iter_batched(
+                    || {
+                        let labels: Vec<usize> = (0..states).collect();
+                        // Uniform stochastic matrix: every row is 1/states.
+                        let row = vec![1.0 / states as f64; states];
+                        let matrix = vec![row; states];
+                        let mc = MarkovChain::new_with(labels, matrix, 0, SplitMix64::new(0xBEEF))
+                            .unwrap();
+                        (Runner::new(mc), n)
+                    },
+                    |(mut r, n)| {
+                        for _ in 0..n {
+                            black_box(r.step(()));
+                        }
+                    },
+                    BatchSize::LargeInput,
+                );
+            });
+        }
+    }
+    group.finish();
+}
+
 criterion_group!(
     benches,
     bench_counter,
@@ -221,5 +255,6 @@ criterion_group!(
     bench_factorial,
     bench_wall_follower,
     bench_tsm_sequence,
+    bench_markov_chain,
 );
 criterion_main!(benches);

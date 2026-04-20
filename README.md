@@ -161,17 +161,51 @@ assertions, so a successful run means the output matched expectations.
 Static composition (everything except the `DynTSM` TSMs) is genuinely
 zero-cost. Numbers from `cargo bench` on a modern x86 box with thin LTO:
 
+### Scalar primitives (per step)
+
 | Machine | ns/step |
 | --- | --- |
 | Gain (f64 multiply) | 0.28 |
-| Delay / Average2 | 0.36 |
+| Delay | 0.36 |
 | Accumulator | 0.53 |
 | Cascade depth 5 (five Delays) | 0.53 |
-| Feedback counter (vs open-loop cascade) | indistinguishable |
+| Feedback counter vs open-loop cascade | indistinguishable |
 | Parallel (two Accumulators) | 0.32 |
+
+### Declarative FSMs (per step)
+
+| Machine | ns/step |
+| --- | --- |
+| DfaAcceptor (substring match) | 0.55 |
+| TableFsm (3-state cycle) | 2.3 |
+| MarkovChain (3 states, SplitMix64) | 12 |
+| MarkovChain (10 states) | 16 |
+| MarkovChain (50 states) | 35 |
+
+### Rolling-window primitives (per step, window=20)
+
+| Machine | ns/step |
+| --- | --- |
+| SumLastN | 14.7 |
+| MovingAverageN | 15.2 |
+| VarianceLastN (population) | 31.6 |
+| StdDevLastN (population) | 31.4 |
+
+Rolling-window cost grows modestly with window size — the update math is
+O(1), but the `RingBuffer<T>` is cloned every step (required by
+`StateMachine`'s pure-transition trait), so a Vec clone proportional to
+the window adds to the baseline.
+
+### Flagship compositions (per step)
+
+| Example | ns/step |
+| --- | --- |
+| Counter (Feedback over Incr+Delay) | 0.52 |
+| Factorial f64 | 0.79 |
 | Fibonacci i128 | 1.04 |
 | Wall follower (Option<f64>) | 3.16 |
-| TSM Repeat / Sequence (dyn-dispatch) | 5–20 |
+| TSM Repeat(CharTSM) | 5.17 |
+| TSM Sequence of N CharTSMs | 19.6 |
 
 Composition tax for monomorphized pipelines is in the noise: a five-deep
 cascade costs the same as a single primitive because LLVM inlines the

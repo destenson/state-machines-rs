@@ -9,7 +9,10 @@ use criterion::{BatchSize, BenchmarkId, Criterion, Throughput, criterion_group, 
 use std::hint::black_box;
 use state_machines_rs::{
     Runner, SMExt,
-    primitives::{Accumulator, Adder, Delay, Gain, Increment, Wire},
+    primitives::{
+        Accumulator, Adder, Delay, DfaAcceptor, Gain, Increment, MovingAverageN, StdDevLastN,
+        SumLastN, TableFsm, VarianceLastN, Wire,
+    },
 };
 
 #[cfg(feature = "toy")]
@@ -297,6 +300,147 @@ fn bench_adder_feedback2(c: &mut Criterion) {
     group.finish();
 }
 
+/// Rolling-window primitives at a few window sizes. The ring buffer is
+/// shared across all four, so differences reflect aggregate-update cost:
+/// SumLastN is one add+sub, Moving adds a divide, Variance adds a
+/// square+sub+square, StdDev adds a sqrt on top of Variance.
+fn bench_rolling_window(c: &mut Criterion) {
+    const N: usize = 100_000;
+    let windows: &[usize] = &[4, 20, 100];
+    let mut group = c.benchmark_group("rolling_window");
+    group.throughput(Throughput::Elements(N as u64));
+
+    for &w in windows {
+        group.bench_with_input(BenchmarkId::new("sum_last_n", w), &w, |b, &w| {
+            b.iter_batched(
+                || {
+                    (
+                        Runner::new(SumLastN::<f64>::new_with(w).unwrap()),
+                        (0..N).map(|i| i as f64 * 0.5).collect::<Vec<_>>(),
+                    )
+                },
+                |(mut r, input)| {
+                    for x in input {
+                        black_box(r.step(x));
+                    }
+                },
+                BatchSize::LargeInput,
+            );
+        });
+
+        group.bench_with_input(BenchmarkId::new("moving_average_n", w), &w, |b, &w| {
+            b.iter_batched(
+                || {
+                    (
+                        Runner::new(MovingAverageN::new_with(w).unwrap()),
+                        (0..N).map(|i| i as f64 * 0.5).collect::<Vec<_>>(),
+                    )
+                },
+                |(mut r, input)| {
+                    for x in input {
+                        black_box(r.step(x));
+                    }
+                },
+                BatchSize::LargeInput,
+            );
+        });
+
+        group.bench_with_input(BenchmarkId::new("variance_last_n_pop", w), &w, |b, &w| {
+            b.iter_batched(
+                || {
+                    (
+                        Runner::new(VarianceLastN::new_population_with(w).unwrap()),
+                        (0..N).map(|i| i as f64 * 0.5).collect::<Vec<_>>(),
+                    )
+                },
+                |(mut r, input)| {
+                    for x in input {
+                        black_box(r.step(x));
+                    }
+                },
+                BatchSize::LargeInput,
+            );
+        });
+
+        group.bench_with_input(BenchmarkId::new("std_dev_last_n_pop", w), &w, |b, &w| {
+            b.iter_batched(
+                || {
+                    (
+                        Runner::new(StdDevLastN::new_population_with(w).unwrap()),
+                        (0..N).map(|i| i as f64 * 0.5).collect::<Vec<_>>(),
+                    )
+                },
+                |(mut r, input)| {
+                    for x in input {
+                        black_box(r.step(x));
+                    }
+                },
+                BatchSize::LargeInput,
+            );
+        });
+    }
+
+    group.finish();
+}
+
+/// Deterministic FSMs configured at runtime: TableFsm (arbitrary output)
+/// and DfaAcceptor (bool output via an acceptance predicate).
+fn bench_declarative_fsm(c: &mut Criterion) {
+    const N: usize = 1_000_000;
+    let mut group = c.benchmark_group("declarative_fsm");
+    group.throughput(Throughput::Elements(N as u64));
+
+    // Traffic-light cycle; state is a u8 index, output is the state.
+    group.bench_function("table_fsm_3_state_cycle", |b| {
+        b.iter_batched(
+            || {
+                let m = TableFsm::new(0u8, |s: &u8, _: &()| {
+                    let next = (s + 1) % 3;
+                    (next, *s)
+                });
+                Runner::new(m)
+            },
+            |mut r| {
+                for _ in 0..N {
+                    black_box(r.step(()));
+                }
+            },
+            BatchSize::LargeInput,
+        );
+    });
+
+    // Substring-match DFA for pattern "ab"; state 0 = none, 1 = saw 'a',
+    // 2 = matched (sink). Input is a repeating stream mostly of 'x'.
+    group.bench_function("dfa_contains_substring", |b| {
+        b.iter_batched(
+            || {
+                let dfa = DfaAcceptor::new(
+                    0u8,
+                    |s: &u8, c: &char| match (*s, *c) {
+                        (2, _) => 2,
+                        (_, 'a') => 1,
+                        (1, 'b') => 2,
+                        _ => 0,
+                    },
+                    |s: &u8| *s == 2,
+                );
+                let input: Vec<char> = (0..N)
+                    .map(|i| match i % 13 { 5 => 'a', 6 => 'b', _ => 'x' })
+                    .collect();
+                (Runner::new(dfa), input)
+            },
+            |(mut r, input)| {
+                for c in input {
+                    black_box(r.step(c));
+                }
+            },
+            BatchSize::LargeInput,
+        );
+    });
+
+    group.finish();
+}
+
 #[cfg(not(feature = "toy"))]
 criterion_group!(
     benches,
@@ -307,6 +451,8 @@ criterion_group!(
     bench_feedback_overhead,
     bench_parallel,
     bench_adder_feedback2,
+    bench_rolling_window,
+    bench_declarative_fsm,
 );
 
 #[cfg(feature = "toy")]
@@ -321,6 +467,8 @@ criterion_group!(
     bench_feedback_overhead,
     bench_parallel,
     bench_adder_feedback2,
+    bench_rolling_window,
+    bench_declarative_fsm,
 );
 
 criterion_main!(benches);

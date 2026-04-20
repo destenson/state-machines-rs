@@ -8,7 +8,7 @@ repository = "https://github.com/destenson/state-machines-rs"
 readme = "README.md"
 keywords = ["state-machine", "fsm", "dsp", "composable", "combinators"]
 categories = ["algorithms", "science", "simulation"]
-exclude = [ "docs/*.pdf", "benches/", "src/bin/" ]
+exclude = [ "docs/*.pdf" ]
 
 [features]
 default = []
