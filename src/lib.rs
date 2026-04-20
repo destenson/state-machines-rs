@@ -18,8 +18,10 @@ pub mod core;
 pub mod defined;
 pub mod ext;
 pub mod primitives;
+pub mod rng;
 pub mod tsm;
 
 pub use crate::core::{Runner, StateMachine};
 pub use crate::defined::{Defined, SafeAdd, SafeMul, SafeSub};
 pub use crate::ext::SMExt;
+pub use crate::rng::{Rng, SplitMix64};

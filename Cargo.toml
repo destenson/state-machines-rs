@@ -15,8 +15,13 @@ default = []
 # `ABC` language acceptor from §4.1.1.1). Kept off by default so the default
 # surface only exposes primitives with real-world utility.
 toy = []
+# Blanket `Rng` impl for `rand::RngCore + Clone`, so rand-crate users can
+# drop their existing RNGs (`SmallRng`, `ChaCha8Rng`, etc.) straight into
+# `MarkovChain` without a newtype wrapper.
+rand = ["dep:rand"]
 
 [dependencies]
+rand = { version = "0.9", default-features = false, optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }

@@ -47,14 +47,22 @@ feedback combinators need a sentinel to probe the inner machine, and
 
 **Primitives** (`primitives::`):
 `Accumulator`, `Gain`, `Delay` (aliased `R`), `Increment`, `Wire`,
-`Negation`, `Adder`, `Multiplier`, `Select`, `DfaAcceptor`.
+`Negation`, `Adder`, `Multiplier`, `Select`, `DfaAcceptor`, `TableFsm`,
+`MarkovChain`.
 
 Chapter-specific pedagogical machines (`ABC`, `ParkingGate`, `SumLast3`,
 `Average2`, `UpDown`) are gated behind the `toy` cargo feature — enable
 it with `--features toy` to build the chapter trace tests and the
-original examples. Each of these will eventually be superseded by a more
-general primitive (rolling-sum / moving-average / table-driven FSM); see
-[`TODO.md`](TODO.md).
+original examples. `TableFsm` supersedes `ParkingGate`; see
+[`TODO.md`](TODO.md) for the remaining replacements (rolling-sum /
+moving-average).
+
+**Randomness** (`rng`):
+`Rng` trait with `next_u64` / `next_f64`, plus the reference
+[`SplitMix64`] PRNG. `MarkovChain<S, R>` carries any `R: Rng` in its
+state. With `--features rand`, you get a blanket impl for
+`rand::RngCore + Clone`, so `rand::rngs::SmallRng` and friends drop in
+without a newtype.
 
 **Combinators** (`combinators::`):
 - Dataflow: `Cascade`, `Parallel`, `Parallel2`, `ParallelAdd`
@@ -124,6 +132,12 @@ assertions, so a successful run means the output matched expectations.
 | Example | What it shows |
 | --- | --- |
 | `json_lexer` | Char-stream to `Vec<Token>` lexer with multi-state accumulation and flush-on-delimiter |
+
+### Stochastic / simulation
+
+| Example | What it shows |
+| --- | --- |
+| `weather_markov` | `MarkovChain` sampling a 3-state weather model; empirical distribution converges to the stationary distribution |
 
 ## Performance
 

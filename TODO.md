@@ -38,18 +38,17 @@ Currently gated: `ParkingGate`, `SumLast3`, `Average2`, `ABC`. Each one is
 a specific instance of something more useful. Before un-gating, replace
 with a generic primitive:
 
-### `ParkingGate` → generic `TableFsm<S, I, O>`
+### `ParkingGate` → generic `TableFsm<S, I, O>` — DONE
 
-A declarative finite-state machine: user supplies the transition closure
-`(S, I) -> (S, O)` at construction time. Same shape as `DfaAcceptor` but
-with arbitrary output type rather than a boolean accept predicate. Lets
-people write FSM controllers (vending machines, protocol parsers,
-traffic lights) without hand-rolling a `StateMachine` impl every time.
+Shipped as `primitives::TableFsm`. Users supply a `Fn(&S, &I) -> (S, O)`
+at construction time; the closure is a generating function for the
+transition table, which subsumes any matrix-style encoding. See the
+traffic-light / vending-machine tests in `tests/table_fsm.rs` and the
+doctest on `TableFsm`.
 
-Open question: is this worth it if writing the impl directly is already
-~15 lines? The value is declarative style (data instead of code) and
-testability — a `TableFsm` with an explicit transition list is easy to
-introspect, draw, or fuzz.
+For non-deterministic (probabilistic) FSMs, see `MarkovChain` —
+separately shipped since stochastic transitions are mathematically a
+different object.
 
 ### `SumLast3` → `SumLastN<T>` (rolling window sum)
 

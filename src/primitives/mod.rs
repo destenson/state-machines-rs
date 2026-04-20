@@ -29,6 +29,7 @@ mod delay;
 mod dfa;
 mod gain;
 mod increment;
+mod markov_chain;
 mod multiplier;
 mod negation;
 #[cfg(feature = "toy")]
@@ -36,6 +37,7 @@ mod parking_gate;
 mod select;
 #[cfg(feature = "toy")]
 mod sum_last3;
+mod table_fsm;
 #[cfg(feature = "toy")]
 mod updown;
 mod wire;
@@ -50,6 +52,7 @@ pub use delay::Delay;
 pub use dfa::DfaAcceptor;
 pub use gain::Gain;
 pub use increment::Increment;
+pub use markov_chain::{MarkovChain, MarkovChainError};
 pub use multiplier::Multiplier;
 pub use negation::Negation;
 #[cfg(feature = "toy")]
@@ -57,6 +60,7 @@ pub use parking_gate::{GateCommand, GatePosition, GateState, ParkingGate, Parkin
 pub use select::Select;
 #[cfg(feature = "toy")]
 pub use sum_last3::SumLast3;
+pub use table_fsm::TableFsm;
 #[cfg(feature = "toy")]
 pub use updown::{UpDown, UpDownInput};
 pub use wire::Wire;
