@@ -7,11 +7,14 @@ use state_machines_rs::{
     primitives::{
         Accumulator, Adder, Delay, Gain, Increment, Multiplier, Negation, Wire,
     },
-    tsm::{CharTSM, ConsumeFiveValues, DynTSM, Repeat, RepeatUntil, Sequence, Until, into_dyn},
+    tsm::{DynTSM, Repeat, RepeatUntil, Sequence, Until, into_dyn},
 };
 
 #[cfg(feature = "toy")]
-use state_machines_rs::primitives::{ABC, AbcOutput, Average2, SumLast3, UpDown, UpDownInput};
+use state_machines_rs::{
+    primitives::{ABC, AbcOutput, Average2, SumLast3, UpDown, UpDownInput},
+    tsm::{CharTSM, ConsumeFiveValues},
+};
 
 // ---------- primitives ----------
 
@@ -169,6 +172,7 @@ fn switch_vs_mux_exercise_4_11() {
 
 // ---------- TSMs ----------
 
+#[cfg(feature = "toy")]
 #[test]
 fn consume_five_values_p153() {
     let m = ConsumeFiveValues::<i64>::new();
@@ -178,6 +182,7 @@ fn consume_five_values_p153() {
     assert!(r.is_done());
 }
 
+#[cfg(feature = "toy")]
 #[test]
 fn repeat_chars_p154() {
     let mut r = Repeat::times(into_dyn(CharTSM::new('a')), 4);
@@ -188,6 +193,7 @@ fn repeat_chars_p154() {
     assert_eq!(out, ['a', 'a', 'a', 'a']);
 }
 
+#[cfg(feature = "toy")]
 #[test]
 fn sequence_abc_p156() {
     let abc: Vec<Box<dyn DynTSM<(), char>>> = ['a', 'b', 'c']
@@ -202,6 +208,7 @@ fn sequence_abc_p156() {
     assert_eq!(out, ['a', 'b', 'c']);
 }
 
+#[cfg(feature = "toy")]
 #[test]
 fn sequence_inside_repeat_p156() {
     let make_abc = || {
@@ -219,6 +226,7 @@ fn sequence_inside_repeat_p156() {
     assert_eq!(out, ['a', 'b', 'c', 'a', 'b', 'c', 'a', 'b', 'c']);
 }
 
+#[cfg(feature = "toy")]
 #[test]
 fn repeat_until_and_until_p158() {
     // Until(greaterThan10, ConsumeFiveValues) on 0..20: runs CFV once,

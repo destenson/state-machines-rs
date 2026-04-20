@@ -11,14 +11,24 @@
 //! implementing `StateMachine` directly. Primitive TSMs still implement the
 //! pure `StateMachine` trait; wrap them with [`Stateful::new`] to feed them
 //! into a TSM combinator.
+//!
+//! The chapter's pedagogical TSMs (`CharTSM`, `ConsumeFiveValues`) are
+//! gated behind the `toy` feature. Writing a small `impl StateMachine`
+//! with a custom `done` predicate is typically as short as instantiating
+//! one of those toys, so the default surface stays free of chapter-only
+//! primitives.
 
+#[cfg(feature = "toy")]
 mod char_tsm;
+#[cfg(feature = "toy")]
 mod consume_five;
 mod repeat;
 mod sequence;
 mod until;
 
+#[cfg(feature = "toy")]
 pub use char_tsm::CharTSM;
+#[cfg(feature = "toy")]
 pub use consume_five::ConsumeFiveValues;
 pub use repeat::Repeat;
 pub use sequence::Sequence;

@@ -51,11 +51,11 @@ feedback combinators need a sentinel to probe the inner machine, and
 `MarkovChain`.
 
 Chapter-specific pedagogical machines (`ABC`, `ParkingGate`, `SumLast3`,
-`Average2`, `UpDown`) are gated behind the `toy` cargo feature — enable
-it with `--features toy` to build the chapter trace tests and the
-original examples. `TableFsm` supersedes `ParkingGate`; see
-[`TODO.md`](TODO.md) for the remaining replacements (rolling-sum /
-moving-average).
+`Average2`, `UpDown`, `CharTSM`, `ConsumeFiveValues`) are gated behind
+the `toy` cargo feature — enable it with `--features toy` to build the
+chapter trace tests and the original examples. `TableFsm` supersedes
+`ParkingGate`; see [`TODO.md`](TODO.md) for the remaining replacements
+(rolling-sum / moving-average).
 
 **Randomness** (`rng`):
 `Rng` trait with `next_u64` / `next_f64`, plus the reference
@@ -72,7 +72,9 @@ without a newtype.
 **Terminating state machines** (`tsm::`):
 `Repeat`, `Sequence`, `Until`, `RepeatUntil` over `Box<dyn DynTSM<I, O>>`,
 plus the `Stateful` adapter that erases a static `StateMachine`'s state
-type so you can drop it into a heterogeneous sequence.
+type so you can drop it into a heterogeneous sequence. Writing a TSM
+primitive is usually a ~10-line `impl StateMachine` with a custom `done`
+predicate; see `examples/hello_world_tsm.rs` for the canonical shape.
 
 **Fluent builder** (`SMExt`):
 `.cascade()`, `.parallel()`, `.parallel_add()`, `.feedback()`,

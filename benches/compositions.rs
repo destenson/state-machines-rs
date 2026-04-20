@@ -8,8 +8,21 @@ use std::hint::black_box;
 use state_machines_rs::{
     Runner, SMExt, StateMachine,
     primitives::{Adder, Delay, Increment, Multiplier},
-    tsm::{CharTSM, DynTSM, Repeat, Sequence, into_dyn},
+    tsm::{DynTSM, Repeat, Sequence, into_dyn},
 };
+
+/// Minimal terminating state machine for bench use — emits a fixed char
+/// once and is done. Defined here so the bench doesn't depend on any
+/// feature-gated primitive.
+struct OneCharTSM(char);
+impl StateMachine for OneCharTSM {
+    type Input = ();
+    type Output = char;
+    type State = bool;
+    fn start_state(&self) -> bool { false }
+    fn next_values(&self, _: &bool, _: &()) -> (bool, char) { (true, self.0) }
+    fn done(&self, s: &bool) -> bool { *s }
+}
 
 const STEPS: &[usize] = &[1_000, 10_000, 100_000];
 
@@ -169,7 +182,7 @@ fn bench_tsm_sequence(c: &mut Criterion) {
             b.iter_batched(
                 || {
                     let machines: Vec<Box<dyn DynTSM<(), char>>> =
-                        (0..n).map(|i| into_dyn(CharTSM::new((b'a' + (i % 26) as u8) as char))).collect();
+                        (0..n).map(|i| into_dyn(OneCharTSM((b'a' + (i % 26) as u8) as char))).collect();
                     Sequence::new(machines)
                 },
                 |mut seq| {
@@ -185,9 +198,9 @@ fn bench_tsm_sequence(c: &mut Criterion) {
     // Repeat(CharTSM) N times — lightest possible TSM dispatch loop.
     for &n in &[1_000usize, 100_000, 1_000_000] {
         group.throughput(Throughput::Elements(n as u64));
-        group.bench_with_input(BenchmarkId::new("repeat_chartsm", n), &n, |b, &n| {
+        group.bench_with_input(BenchmarkId::new("repeat_one_char", n), &n, |b, &n| {
             b.iter_batched(
-                || Repeat::times(into_dyn(CharTSM::new('x')), n),
+                || Repeat::times(into_dyn(OneCharTSM('x')), n),
                 |mut r| {
                     while !r.is_done() {
                         black_box(r.step(&()));

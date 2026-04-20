@@ -69,6 +69,19 @@ exists — mostly just a named convenience. Include both integer and
 floating-point variants (integer SMA is useful when you want predictable
 arithmetic).
 
+### `CharTSM`, `ConsumeFiveValues` → just write a small impl
+
+Both are chapter-pedagogical TSMs gated behind `toy`. The "emit a fixed
+value once, terminate" and "read N inputs, emit a fold, terminate"
+patterns are tiny — typically 10 lines including `done`. No general
+primitive seems to beat writing the impl directly. `examples/
+hello_world_tsm.rs` ships an inline `OneCharTSM` demonstrating the
+pattern for the first case.
+
+If a compelling general form emerges (e.g. `OnceTSM<T>` used in enough
+places to deduplicate), it can be added later without churning the
+feature gate.
+
 ### `UpDown` → already generalized by `Accumulator<i64>`
 
 `UpDown` is just `Accumulator<i64>` with a trivial `{Up → +1, Down → -1}`
