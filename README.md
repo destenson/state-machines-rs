@@ -48,7 +48,10 @@ feedback combinators need a sentinel to probe the inner machine, and
 **Primitives** (`primitives::`):
 `Accumulator`, `Gain`, `Delay` (aliased `R`), `Increment`, `Wire`,
 `Negation`, `Adder`, `Multiplier`, `Select`, `SumLastN`,
-`MovingAverageN`, `DfaAcceptor`, `TableFsm`, `MarkovChain`.
+`MovingAverageN`, `VarianceLastN`, `StdDevLastN`, `DfaAcceptor`,
+`TableFsm`, `MarkovChain`. `RingBuffer<T>` is the shared state backing
+for the rolling-window primitives, exposed because it shows up in their
+`State` associated type.
 
 Chapter-specific pedagogical machines (`ABC`, `ParkingGate`, `SumLast3`,
 `Average2`, `UpDown`, `CharTSM`, `ConsumeFiveValues`) are gated behind

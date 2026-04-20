@@ -35,11 +35,14 @@ mod multiplier;
 mod negation;
 #[cfg(feature = "toy")]
 mod parking_gate;
+mod ring_buffer;
 mod select;
+mod std_dev_last_n;
 #[cfg(feature = "toy")]
 mod sum_last3;
 mod sum_last_n;
 mod table_fsm;
+mod variance_last_n;
 #[cfg(feature = "toy")]
 mod updown;
 mod wire;
@@ -60,11 +63,14 @@ pub use multiplier::Multiplier;
 pub use negation::Negation;
 #[cfg(feature = "toy")]
 pub use parking_gate::{GateCommand, GatePosition, GateState, ParkingGate, ParkingGateInput};
+pub use ring_buffer::RingBuffer;
 pub use select::Select;
+pub use std_dev_last_n::StdDevLastN;
 #[cfg(feature = "toy")]
 pub use sum_last3::SumLast3;
 pub use sum_last_n::{SumLastN, SumLastNError};
 pub use table_fsm::TableFsm;
+pub use variance_last_n::{VarianceKind, VarianceLastN, VarianceLastNError};
 #[cfg(feature = "toy")]
 pub use updown::{UpDown, UpDownInput};
 pub use wire::Wire;

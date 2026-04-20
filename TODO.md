@@ -58,6 +58,31 @@ the buffer fills). Generic over any `SafeAdd + SafeSub + Clone + Default`
 — works for integers, floats, and `Option<T>` in feedback pipelines.
 `new_with(n) -> Result<Self, SumLastNError>` rejects zero-width windows.
 
+### `WindowedFold<T, S, Add, Remove, Finish>` — deferred
+
+Hypothetical generalization of all `*LastN` primitives: a ring-buffer-
+backed state machine parameterized by user closures `add: Fn(&S, &T) ->
+S`, `remove: Fn(&S, &T) -> S`, and `finish: Fn(&S, usize) -> O`. Every
+existing rolling-window primitive is an instance:
+
+- SumLastN    : S=T,         add=+,  remove=−, finish=s.clone()
+- MovingAvgN  : S=sum,       add=+,  remove=−, finish=s/n
+- VarianceN   : S=(sum,sum²), add on both, remove on both, finish via (s2-s1²/n)/n
+- StdDevN     : same, finish=sqrt(variance)
+
+Deferred because: (a) the generic signature is closure-heavy and
+clunkier than the concrete form for the common cases; (b) numerical
+concerns (Welford-style variance, int vs float semantics, sample vs
+population divisors) don't cleanly fold into a single `finish`; (c) we
+only have four concrete consumers, so the generic would add indirection
+rather than remove it. Revisit if/when someone wants rolling min/max,
+median, skewness, kurtosis, or a monoidal metric we don't already ship —
+at ~3 more consumers the generalization starts to pay.
+
+DRY is already taken care of at the implementation level: all the
+rolling-window primitives share `primitives::RingBuffer<T>` for their
+ring-buffer state. Only the aggregate update + output formula differs.
+
 ### `Average2` → `MovingAverageN` — DONE
 
 Shipped as `primitives::MovingAverageN` (f64-specialized). Maintains a
