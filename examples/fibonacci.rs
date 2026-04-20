@@ -27,6 +27,7 @@ fn main() {
         .feedback();
 
     let out: Vec<_> = Runner::new(fib).run(10);
-    println!("{:?}", out.into_iter().flatten().collect::<Vec<_>>());
+    println!("{:?}", out.iter().flatten().collect::<Vec<_>>());
     // Expected: [1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+    assert_eq!(out.into_iter().flatten().collect::<Vec<_>>(), [1, 2, 3, 5, 8, 13, 21, 34, 55, 89]);
 }

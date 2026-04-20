@@ -33,6 +33,7 @@ fn main() {
         p(GatePosition::Bottom, true, false),
     ];
 
+    let mut results = vec![];
     println!("step | input                             | state       | command");
     for (t, input) in inputs.iter().enumerate() {
         let command = gate.step(*input);
@@ -41,9 +42,18 @@ fn main() {
             t, input.position, input.car_at_gate, input.car_just_exited,
             gate.state(), command,
         );
+        results.push(command);
     }
 
     // Final output sequence per the chapter: nop, raise, raise, raise, raise,
     // raise, nop, nop, nop, lower, lower, lower, lower, lower, lower, nop, raise
-    let _ = GateCommand::Nop; // ensure enum is in scope
+    // let _ = GateCommand::Nop; // ensure enum is in scope
+    let expected = [
+        GateCommand::Nop, GateCommand::Raise, GateCommand::Raise, GateCommand::Raise,
+        GateCommand::Raise, GateCommand::Raise, GateCommand::Nop, GateCommand::Nop,
+        GateCommand::Nop, GateCommand::Lower, GateCommand::Lower, GateCommand::Lower,
+        GateCommand::Lower, GateCommand::Lower, GateCommand::Lower, GateCommand::Nop,
+        GateCommand::Raise,
+    ];
+    assert_eq!(results, expected);
 }

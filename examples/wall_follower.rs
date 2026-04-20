@@ -66,11 +66,21 @@ fn main() {
 
     let system = controller.cascade(world).feedback();
 
+    let mut results = vec![];
     let out: Vec<_> = Runner::new(system).run(30);
     for (t, d) in out.iter().enumerate() {
         if let Some(dist) = d {
             println!("t={:2}  distance = {:.6}", t, dist);
+            results.push(d);
         }
     }
+    let mut deltas = vec![];
+    results.windows(2).for_each(|w| {
+        if let [Some(d1), Some(d2)] = w {
+            deltas.push(d2 - d1);
+        }
+    });
+    assert!(deltas.iter().all(|x| x<&0.0)); // Distance converges monotonically to 1.0.
+    assert!(results.last().unwrap().unwrap() - 1.0 < 0.05);
     // Distance converges monotonically to 1.0.
 }

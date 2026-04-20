@@ -12,9 +12,12 @@ fn main() {
     let chars: Vec<char> = "abcacab".chars().collect();
     let outs = acceptor.transduce(chars.iter().copied());
 
+    let mut results = vec![];
     for (c, o) in chars.iter().zip(outs.iter()) {
         let verdict = if matches!(o, AbcOutput::Accept) { "accept" } else { "REJECT" };
         println!("{} -> {}", c, verdict);
+        results.push(verdict);
     }
     // Expected: accept, accept, accept, accept, REJECT, REJECT, REJECT
+    assert_eq!(results, ["accept", "accept", "accept", "accept", "REJECT", "REJECT", "REJECT"]);
 }

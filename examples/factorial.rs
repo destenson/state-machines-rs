@@ -24,6 +24,7 @@ fn main() {
     let fact = counter.cascade(running_product);
 
     let out: Vec<_> = Runner::new(fact).run(10);
-    println!("{:?}", out.into_iter().flatten().collect::<Vec<_>>());
+    println!("{:?}", out.iter().flatten().collect::<Vec<_>>());
     // Expected: [1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880]
+    assert_eq!(out.into_iter().flatten().collect::<Vec<_>>(), [1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880]);
 }
