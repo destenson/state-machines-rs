@@ -2,11 +2,32 @@
 name = "state-machines-rs"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+description = "Compositional discrete-time state machines, after MIT 6.01 chapter 4."
+repository = "https://github.com/destenson/state-machines-rs"
+readme = "README.md"
+keywords = ["state-machine", "fsm", "dsp", "composable", "combinators"]
+categories = ["algorithms", "science", "simulation"]
+
+[features]
+default = []
+# Chapter teaching examples that aren't useful as library primitives (e.g. the
+# `ABC` language acceptor from §4.1.1.1). Kept off by default so the default
+# surface only exposes primitives with real-world utility.
+toy = []
 
 [dependencies]
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
+
+[[example]]
+name = "language_acceptor"
+required-features = ["toy"]
+
+[[example]]
+name = "parking_gate"
+required-features = ["toy"]
 
 [[bench]]
 name = "throughput"

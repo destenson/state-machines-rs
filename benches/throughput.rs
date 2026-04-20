@@ -9,8 +9,11 @@ use criterion::{BatchSize, BenchmarkId, Criterion, Throughput, criterion_group, 
 use std::hint::black_box;
 use state_machines_rs::{
     Runner, SMExt,
-    primitives::{Accumulator, Adder, Average2, Delay, Gain, Increment, SumLast3, Wire},
+    primitives::{Accumulator, Adder, Delay, Gain, Increment, Wire},
 };
+
+#[cfg(feature = "toy")]
+use state_machines_rs::primitives::{Average2, SumLast3};
 
 const SIZES: &[usize] = &[1_000, 100_000, 1_000_000];
 
@@ -71,6 +74,7 @@ fn bench_gain(c: &mut Criterion) {
     group.finish();
 }
 
+#[cfg(feature = "toy")]
 fn bench_sum_last3(c: &mut Criterion) {
     let mut group = c.benchmark_group("sum_last3");
     for &n in SIZES {
@@ -90,6 +94,7 @@ fn bench_sum_last3(c: &mut Criterion) {
     group.finish();
 }
 
+#[cfg(feature = "toy")]
 fn bench_average2(c: &mut Criterion) {
     let mut group = c.benchmark_group("average2");
     for &n in SIZES {
@@ -292,6 +297,19 @@ fn bench_adder_feedback2(c: &mut Criterion) {
     group.finish();
 }
 
+#[cfg(not(feature = "toy"))]
+criterion_group!(
+    benches,
+    bench_accumulator,
+    bench_delay,
+    bench_gain,
+    bench_cascade_depth,
+    bench_feedback_overhead,
+    bench_parallel,
+    bench_adder_feedback2,
+);
+
+#[cfg(feature = "toy")]
 criterion_group!(
     benches,
     bench_accumulator,
@@ -304,4 +322,5 @@ criterion_group!(
     bench_parallel,
     bench_adder_feedback2,
 );
+
 criterion_main!(benches);

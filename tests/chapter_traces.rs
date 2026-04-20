@@ -5,11 +5,13 @@ use state_machines_rs::{
     Runner, SMExt, StateMachine,
     combinators::{Feedback, Mux, Switch},
     primitives::{
-        ABC, Accumulator, AbcOutput, Adder, Average2, Delay, Gain, Increment, Multiplier,
-        Negation, SumLast3, UpDown, UpDownInput, Wire,
+        Accumulator, Adder, Delay, Gain, Increment, Multiplier, Negation, Wire,
     },
     tsm::{CharTSM, ConsumeFiveValues, DynTSM, Repeat, RepeatUntil, Sequence, Until, into_dyn},
 };
+
+#[cfg(feature = "toy")]
+use state_machines_rs::primitives::{ABC, AbcOutput, Average2, SumLast3, UpDown, UpDownInput};
 
 // ---------- primitives ----------
 
@@ -21,6 +23,7 @@ fn accumulator_matches_chapter_p123() {
     assert_eq!(out, [100, 97, 101, -22, -12]);
 }
 
+#[cfg(feature = "toy")]
 #[test]
 fn abc_acceptor_p121() {
     // Input  'a','b','c','a','c','a','b' -> T,T,T,T,F,F,F
@@ -30,6 +33,7 @@ fn abc_acceptor_p121() {
     assert_eq!(bools, [true, true, true, true, false, false, false]);
 }
 
+#[cfg(feature = "toy")]
 #[test]
 fn updown_counter_p122() {
     use UpDownInput::*;
@@ -46,6 +50,7 @@ fn delay_p122() {
     assert_eq!(out, [7, 3, 1, 2, 5]);
 }
 
+#[cfg(feature = "toy")]
 #[test]
 fn average2_p131() {
     // Input [10, 5, 2, 10]; output [5.0, 7.5, 3.5, 6.0].
@@ -54,6 +59,7 @@ fn average2_p131() {
     assert_eq!(out, [5.0, 7.5, 3.5, 6.0]);
 }
 
+#[cfg(feature = "toy")]
 #[test]
 fn sum_last3_p132() {
     let mut m = Runner::new(SumLast3::<i64>::default());
