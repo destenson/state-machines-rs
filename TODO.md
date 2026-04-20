@@ -50,24 +50,22 @@ For non-deterministic (probabilistic) FSMs, see `MarkovChain` —
 separately shipped since stochastic transitions are mathematically a
 different object.
 
-### `SumLast3` → `SumLastN<T>` (rolling window sum)
+### `SumLast3` → `SumLastN<T>` — DONE
 
-A fixed-window rolling sum over arbitrary numeric types. Effectively a
-length-N FIR filter with unity coefficients. Useful in streaming metrics
-(5-minute request totals), signal processing (integer moving averages),
-and as a building block for `MovingAverage`.
+Shipped as `primitives::SumLastN<T>`. Runtime-sized window, O(1) updates
+via a running sum maintained in state (subtract oldest, add newest once
+the buffer fills). Generic over any `SafeAdd + SafeSub + Clone + Default`
+— works for integers, floats, and `Option<T>` in feedback pipelines.
+`new_with(n) -> Result<Self, SumLastNError>` rejects zero-width windows.
 
-Implementation: ring buffer in state, O(1) per step (subtract oldest, add
-newest). Parameterize by window size; decide whether to expose a
-const-generic `SumLastN<T, const N: usize>` or a runtime-sized variant
-(or both).
+### `Average2` → `MovingAverageN` — DONE
 
-### `Average2` → `MovingAverageN<T>` (simple moving average)
-
-Cascade of `SumLastN` with a divide-by-N gain. Trivial once `SumLastN`
-exists — mostly just a named convenience. Include both integer and
-floating-point variants (integer SMA is useful when you want predictable
-arithmetic).
+Shipped as `primitives::MovingAverageN` (f64-specialized). Maintains a
+running sum exactly and divides once per step on output; during warm-up
+it emits the partial average over samples seen so far rather than
+pretending about zero-padding. `new_with(n) -> Result<Self,
+MovingAverageNError>` rejects zero-width windows. For integer or other
+typed SMAs, users can cascade `SumLastN<T>` with `Gain(1/n)` manually.
 
 ### `CharTSM`, `ConsumeFiveValues` → just write a small impl
 

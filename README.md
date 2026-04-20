@@ -47,15 +47,18 @@ feedback combinators need a sentinel to probe the inner machine, and
 
 **Primitives** (`primitives::`):
 `Accumulator`, `Gain`, `Delay` (aliased `R`), `Increment`, `Wire`,
-`Negation`, `Adder`, `Multiplier`, `Select`, `DfaAcceptor`, `TableFsm`,
-`MarkovChain`.
+`Negation`, `Adder`, `Multiplier`, `Select`, `SumLastN`,
+`MovingAverageN`, `DfaAcceptor`, `TableFsm`, `MarkovChain`.
 
 Chapter-specific pedagogical machines (`ABC`, `ParkingGate`, `SumLast3`,
 `Average2`, `UpDown`, `CharTSM`, `ConsumeFiveValues`) are gated behind
 the `toy` cargo feature — enable it with `--features toy` to build the
-chapter trace tests and the original examples. `TableFsm` supersedes
-`ParkingGate`; see [`TODO.md`](TODO.md) for the remaining replacements
-(rolling-sum / moving-average).
+chapter trace tests and the original examples. Each toy now has a
+generalized counterpart on the default surface: `TableFsm` replaces
+`ParkingGate`, `SumLastN` replaces `SumLast3`, `MovingAverageN`
+replaces `Average2`, and `Accumulator<i64>` with a delta mapping
+covers `UpDown`. See [`TODO.md`](TODO.md) for notes on `CharTSM` /
+`ConsumeFiveValues` (shape is small enough to inline).
 
 **Randomness** (`rng`):
 `Rng` trait with `next_u64` / `next_f64`, plus the reference
