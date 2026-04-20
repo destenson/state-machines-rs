@@ -132,12 +132,21 @@ assertions, so a successful run means the output matched expectations.
 | Example | What it shows |
 | --- | --- |
 | `json_lexer` | Char-stream to `Vec<Token>` lexer with multi-state accumulation and flush-on-delimiter |
+| `tcp_state_machine` | RFC 793 TCP connection FSM via `TableFsm`; active/passive/simultaneous close scenarios |
+
+### Games / sensation-driven FSMs
+
+| Example | What it shows |
+| --- | --- |
+| `game_ai` | Enemy behavior (idle/chase/attack/flee) via `TableFsm`; transitions on distance + health |
 
 ### Stochastic / simulation
 
 | Example | What it shows |
 | --- | --- |
 | `weather_markov` | `MarkovChain` sampling a 3-state weather model; empirical distribution converges to the stationary distribution |
+| `sir_epidemic` | 1000 independent `MarkovChain` agents modeling S/I/R disease progression; infection curve peaks and decays |
+| `text_markov` | Character-level bigram model built from a small corpus; samples "English-adjacent" text |
 
 ## Performance
 
